@@ -1,0 +1,35 @@
+---
+- name: Deploy static site to Ubuntu EC2 instances
+  hosts: instances
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+
+    - name: Enable and start NGINX
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Deploy HTML page
+      template:
+        src: index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Restart NGINX
+      systemd:
+        name: nginx
+        state: restarted
